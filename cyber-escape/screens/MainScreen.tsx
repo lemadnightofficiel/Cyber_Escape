@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  StatusBar,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Card, Title, Paragraph, Button, Avatar, Text } from "react-native-paper";
 import { supabase } from "../lib/supabase";
 
-interface UserData {
-  username: string;
-  score: number;
-}
-
 export default function MainScreen() {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<{ username: string; score: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +24,6 @@ export default function MainScreen() {
       setLoading(true);
       setError(null);
 
-      // Récupération de l'utilisateur authentifié
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData?.user) {
         throw new Error("Utilisateur non connecté.");
@@ -31,7 +32,6 @@ export default function MainScreen() {
       const userId = authData.user.id;
       console.log("✅ Utilisateur connecté :", userId);
 
-      // Requête pour récupérer les infos du profil
       let { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("username, score")
@@ -65,59 +65,73 @@ export default function MainScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
-        <Text style={styles.loadingText}>Chargement...</Text>
-      </View>
+      <SafeAreaView style={styles.safeContainer}>
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200ee" />
+          <Text style={styles.loadingText}>Chargement...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>⚠️ {error}</Text>
-        <Button mode="contained" onPress={fetchUserData} style={styles.retryButton}>
-          Réessayer
-        </Button>
-        <Button mode="outlined" onPress={handleLogout} style={styles.logoutButton}>
-          Se déconnecter
-        </Button>
-      </View>
+      <SafeAreaView style={styles.safeContainer}>
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>⚠️ {error}</Text>
+          <Button mode="contained" onPress={fetchUserData} style={styles.retryButton}>
+            Réessayer
+          </Button>
+          <Button mode="outlined" onPress={handleLogout} style={styles.logoutButton}>
+            Se déconnecter
+          </Button>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
-        <Card style={styles.profileCard}>
-          <Card.Title
-            title={`Bienvenue, ${user?.username || "Invité"}`}
-            subtitle={`Points: ${user?.score ?? 0}`}
-            left={(props) => <Avatar.Icon {...props} icon="account" />}
-          />
-        </Card>
+    <SafeAreaView style={styles.safeContainer}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
+        <ScrollView style={styles.scrollContainer}>
+          <Card style={styles.profileCard}>
+            <Card.Title
+              title={`Bienvenue, ${user?.username || "Invité"}`}
+              subtitle={`Points: ${user?.score ?? 0}`}
+              left={(props) => <Avatar.Icon {...props} icon="account" />}
+            />
+          </Card>
 
-        <Title style={styles.sectionTitle}>Défis du jour</Title>
-        <Card style={styles.challengeCard}>
-          <Card.Content>
-            <Title>Défi Cryptographie</Title>
-            <Paragraph>Déchiffrez le code secret</Paragraph>
-          </Card.Content>
-        </Card>
+          <Title style={styles.sectionTitle}>Défis du jour</Title>
+          <Card style={styles.challengeCard}>
+            <Card.Content>
+              <Title>Défi Cryptographie</Title>
+              <Paragraph>Déchiffrez le code secret</Paragraph>
+            </Card.Content>
+          </Card>
 
-        <Title style={styles.sectionTitle}>Défis hebdomadaires</Title>
-        <Card style={styles.challengeCard}>
-          <Card.Content>
-            <Title>Quiz Réseau</Title>
-            <Paragraph>Testez vos connaissances en réseau</Paragraph>
-          </Card.Content>
-        </Card>
-      </ScrollView>
-    </View>
+          <Title style={styles.sectionTitle}>Défis hebdomadaires</Title>
+          <Card style={styles.challengeCard}>
+            <Card.Content>
+              <Title>Quiz Réseau</Title>
+              <Paragraph>Testez vos connaissances en réseau</Paragraph>
+            </Card.Content>
+          </Card>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeContainer: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    paddingTop: StatusBar.currentHeight || 20, // ✅ Ajout d'un padding dynamique
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

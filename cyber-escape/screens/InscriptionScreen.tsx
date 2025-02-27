@@ -28,6 +28,10 @@ export default function InscriptionScreen({ navigation }: Props) {
       Alert.alert("Erreur", "Veuillez remplir tous les champs.");
       return false;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Alert.alert("Erreur", "Veuillez entrer un email valide.");
+      return false;
+    }
     if (password !== confirmPassword) {
       Alert.alert("Erreur", "Les mots de passe ne correspondent pas.");
       return false;
@@ -53,17 +57,18 @@ export default function InscriptionScreen({ navigation }: Props) {
       });
 
       if (error) throw error;
-      if (!data.user) throw new Error("Utilisateur introuvable après l'inscription.");
+      if (!data?.user) throw new Error("Utilisateur introuvable après l'inscription.");
 
       const userId = data.user.id;
 
+      // Utilisation de `upsert()` pour éviter les erreurs de clé unique
       const { error: profileError } = await supabase
         .from("profiles")
-        .insert([
+        .upsert([
           {
             id: userId,
-            email: email,
-            username: username,
+            email,
+            username,
             avatar_url: null,
             score: 0,
             updated_at: new Date(),
