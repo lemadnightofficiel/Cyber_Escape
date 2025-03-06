@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingTop: StatusBar.currentHeight || 20, // ✅ Ajout d'un padding dynamique
+    paddingTop: StatusBar.currentHeight || 20,
   },
   container: {
     flex: 1,

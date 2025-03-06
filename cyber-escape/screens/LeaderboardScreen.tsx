@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity, Image } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -11,9 +11,9 @@ type Props = NativeStackScreenProps<RootStackParamList, "Leaderboard">;
 interface Player {
   id: string;
   user_id: string;
-  username: string;
   score: number;
   last_updated: string;
+  username: string;
   avatar_url?: string;
   rank?: number;
 }
@@ -23,6 +23,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
   const [userRank, setUserRank] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeoutError, setTimeoutError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -30,30 +31,59 @@ export default function LeaderboardScreen({ navigation }: Props) {
     }, [])
   );
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setTimeoutError(true);
+      setLoading(false);
+    }, 15000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   async function fetchLeaderboard() {
     try {
       setLoading(true);
       setError(null);
+      setTimeoutError(false);
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      if (!user) {
+        setError("Vous devez être connecté pour voir le leaderboard.");
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("leaderboard")
-        .select("id, user_id, username, score, last_updated, avatar_url")
+        .select(`
+          id,
+          user_id,
+          score,
+          last_updated,
+          profiles!inner(username, avatar_url)
+        `)
         .order("score", { ascending: false });
 
       if (error) throw error;
 
-      const top10 = data.slice(0, 10);
-      setLeaderboard(top10);
+      const formattedData = data.map((player, index) => ({
+        id: player.id,
+        user_id: player.user_id,
+        score: player.score,
+        last_updated: player.last_updated,
+        username: player.profiles && player.profiles[0]?.username || "Joueur inconnu",
+        avatar_url: player.profiles && player.profiles[0]?.avatar_url || null,
+        rank: index + 1,
+      }));
 
-      const currentUserRank = data.findIndex(player => player.user_id === user.id);
+      setLeaderboard(formattedData);
+
+      const currentUserRank = formattedData.findIndex(player => player.user_id === user.id);
       if (currentUserRank !== -1) {
         setUserRank({
-          ...data[currentUserRank],
-          rank: currentUserRank + 1
-        } as Player);
+          ...formattedData[currentUserRank],
+          rank: currentUserRank + 1,
+        });
       }
     } catch (err: any) {
       setError("Erreur lors du chargement du leaderboard. Réessayez.");
@@ -66,7 +96,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
   const renderPlayerItem = ({ item, index }: { item: Player; index: number }) => (
     <View style={[styles.playerContainer, index < 3 && styles.topPlayer]}>
       <Text style={styles.rank}>
-        {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${item.rank ?? index + 1}`}
+        {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`}
       </Text>
       <Image 
         style={styles.avatar}
@@ -83,6 +113,13 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
       {loading ? (
         <ActivityIndicator size="large" color="#FFD700" />
+      ) : timeoutError ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Le chargement a pris trop de temps. Veuillez réessayer.</Text>
+          <TouchableOpacity onPress={fetchLeaderboard} style={styles.refreshButton}>
+            <Ionicons name="refresh" size={24} color="#FF5733" />
+          </TouchableOpacity>
+        </View>
       ) : error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -98,10 +135,10 @@ export default function LeaderboardScreen({ navigation }: Props) {
             renderItem={renderPlayerItem}
             contentContainerStyle={styles.list}
           />
-          {userRank && (
+          {userRank && userRank.rank !== undefined && (
             <View style={styles.userRankContainer}>
               <Text style={styles.userRankTitle}>Votre classement</Text>
-              {renderPlayerItem({ item: userRank, index: (userRank.rank ?? 0) - 1 })}
+              {renderPlayerItem({ item: userRank, index: userRank.rank - 1 })}
             </View>
           )}
         </>
