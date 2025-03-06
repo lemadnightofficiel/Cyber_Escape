@@ -6,26 +6,42 @@ import ConnexionScreen from "../screens/ConnexionScreen";
 import InscriptionScreen from "../screens/InscriptionScreen";
 import MainScreen from "../screens/MainScreen";
 import LeaderboardScreen from "../screens/LeaderboardScreen";
-import DefisScreen from "../screens/DefisScreen";
+import GamesScreen from "../screens/GamesScreen";
 import ProfilScreen from "../screens/ProfilScreen";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import { View, ActivityIndicator } from "react-native";
-import DetailDefiScreen from "../screens/DetailDefiScreen";
+
+// Import game screens
+import DebuggerScreen from "../screens/DebuggerScreen";
+import AlgoHoleScreen from "../screens/AlgoHoleScreen";
+import DecipherScreen from "../screens/DecipherScreen";
+import GoFishScreen from "../screens/GoFishScreen";
+import ProtoLinkScreen from "../screens/ProtoLinkScreen";
+import OSIScreen from "../screens/OSIScreen";
+import BinaryConversionScreen from "../screens/BinaryConversionScreen";
+import LinuxQuizScreen from "../screens/LinuxQuizScreen";
 
 export type RootStackParamList = {
-  Main: undefined;
-  Leaderboard: undefined;
-  Defis: undefined;
-  Profil: undefined;
   Connexion: undefined;
   Inscription: undefined;
-  DetailDefi: { id: number };
+  Main: undefined;
+  Profil: undefined;
+  Games: undefined;
+  Debugger: undefined;
+  AlgoHole: undefined;
+  Decipher: undefined;
+  GoFish: undefined;
+  ProtoLink: undefined;
+  OSI: undefined;
+  BinaryConversion: undefined;
+  LinuxQuiz: undefined;
+  Leaderboard: undefined;
 };
 
 export type BottomTabParamList = {
   Main: undefined;
-  Defis: undefined;
+  Games: undefined;
   Leaderboard: undefined;
   Profil: undefined;
 };
@@ -40,7 +56,7 @@ function BottomTabNavigator() {
         tabBarIcon: ({ color, size }) => {
           const icons: { [key in keyof BottomTabParamList]: keyof typeof MaterialCommunityIcons.glyphMap } = {
             Main: "home",
-            Defis: "bullseye-arrow",
+            Games: "bullseye-arrow",
             Leaderboard: "trophy",
             Profil: "account",
           };
@@ -63,7 +79,7 @@ function BottomTabNavigator() {
       })}
     >
       <Tab.Screen name="Main" component={MainScreen} options={{ title: "Accueil" }} />
-      <Tab.Screen name="Defis" component={DefisScreen} options={{ title: "Défis" }} />
+      <Tab.Screen name="Games" component={GamesScreen} options={{ title: "Jeux" }} />
       <Tab.Screen name="Leaderboard" component={LeaderboardScreen} options={{ title: "Leaderboard" }} />
       <Tab.Screen name="Profil" component={ProfilScreen} options={{ title: "Profil" }} />
     </Tab.Navigator>
@@ -105,7 +121,14 @@ export default function AppNavigator() {
       {session ? (
         <>
           <Stack.Screen name="Main" component={BottomTabNavigator} />
-          <Stack.Screen name="DetailDefi" component={DetailDefiScreen} />
+          <Stack.Screen name="Debugger" component={DebuggerScreen} />
+          <Stack.Screen name="AlgoHole" component={AlgoHoleScreen} />
+          <Stack.Screen name="Decipher" component={DecipherScreen} />
+          <Stack.Screen name="GoFish" component={GoFishScreen} />
+          <Stack.Screen name="ProtoLink" component={ProtoLinkScreen} />
+          <Stack.Screen name="OSI" component={OSIScreen} />
+          <Stack.Screen name="BinaryConversion" component={BinaryConversionScreen} />
+          <Stack.Screen name="LinuxQuiz" component={LinuxQuizScreen} />
         </>
       ) : (
         <>
