@@ -159,33 +159,36 @@ export default function AlgoHoleScreen({ route }: Props) {
 
  return (
   <SafeAreaView style={styles.container}>
-      {/* Back to Main Menu Button */}
+    <View style={styles.header}>
       <TouchableOpacity
         style={styles.backButton}
         onPress={goBackToMainMenu}
       >
-        <Text style={styles.backButtonText}>Back to Main Menu</Text>
+        <Text style={styles.backButtonText}> Go Back </Text>
       </TouchableOpacity>
-
-      {/* Difficulty Indicators */}
-      <View style={styles.difficultyContainer}>
-        {difficulties.map((diff, index) => (
-          <View 
-            key={index} 
-            style={[
-              styles.difficultyButton, 
-              index === difficultyLevel && styles.selectedDifficulty
-            ]}
-          >
-            <Text style={[
-              styles.difficultyText,
-              index === difficultyLevel && styles.selectedDifficultyText
-            ]}>
-              {diff.name}
-            </Text>
-          </View>
-        ))}
-      </View>
+      <Text style={styles.gameName}>Binary Conversion</Text>
+    </View>
+    {/* Difficulty Indicators */}
+    <View style={styles.difficultyContainer}>
+      {difficulties.map((diff, index) => (
+        <View 
+          key={index} 
+          style={[
+            styles.difficultyButton, 
+            index === difficultyLevel && styles.selectedDifficulty
+          ]}
+        >
+          <Text style={[
+            styles.difficultyText,
+            index === difficultyLevel && styles.selectedDifficultyText
+          ]}>
+            {diff.name}
+          </Text>
+        </View>
+      ))}
+    </View>
+    <View style={styles.gameContent}>
+      
 
       {!isGameOver ? (
         <>
@@ -209,34 +212,35 @@ export default function AlgoHoleScreen({ route }: Props) {
           </TouchableOpacity>
         </>
       ) : (
-        <View>
+        <View style={styles.gameOverContainer}>
           <Text style={styles.gameOverText}>Game Over!</Text>
           <Text style={styles.finalScoreText}>Final Score: {score}</Text>
           <Text style={styles.resultsTitle}>Results:</Text>
-          <ScrollView>
-          {levelResults.map((result, index) => (
-            <View key={index} style={styles.resultItem}>
-              <Text>
-                Question: {result.question} Convert to:{' '}
-                {isNaN(Number(result.question)) ? 'Decimal' : 'Binary'}
-              </Text>
-              <Text>Your Answer: {result.userAnswer}</Text>
-              <Text>
-                Correct Answer: {result.correctAnswer}
-              </Text>
-              <Text>
-                {result.isCorrect ? 'Correct!' : 'Incorrect!'}
-              </Text>
-            </View>
-          ))}
+          <ScrollView style={styles.resultsScrollView}>
+            {levelResults.map((result, index) => (
+              <View key={index} style={[
+                styles.resultItem,
+                result.isCorrect ? styles.correctResult : styles.incorrectResult
+              ]}>
+                <Text>
+                  Question: {result.question} Convert to:{' '}
+                  {isNaN(Number(result.question)) ? 'Decimal' : 'Binary'}
+                </Text>
+                <Text>Your Answer: {result.userAnswer}</Text>
+                <Text>
+                  Correct Answer: {result.correctAnswer}
+                </Text>
+                <Text style={result.isCorrect ? styles.correctText : styles.incorrectText}>
+                  {result.isCorrect ? 'Correct!' : 'Incorrect!'}
+                </Text>
+              </View>
+            ))}
           </ScrollView>
-          <TouchableOpacity style={styles.resetButton} onPress={resetGame}>
-            <Text style={styles.resetButtonText}>Reset Game</Text>
-          </TouchableOpacity>
         </View>
       )}
+    </View>
   </SafeAreaView>
-  );
+);
 }
 
 const styles = StyleSheet.create({
@@ -244,21 +248,36 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   backButton: {
     backgroundColor: '#6200ee',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginBottom: 20,
   },
   backButtonText: {
     color: 'white',
     fontSize: 16,
   },
+  gameName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 20,
+  },
+  gameContent: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 50,
+  },
   difficultyContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+    width: '100%',
   },
   difficultyButton: {
     padding: 10,
@@ -300,6 +319,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 15,
+    textAlign: 'center',
   },
   submitButton: {
     backgroundColor: '#6200ee',
@@ -310,6 +330,10 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: 'white',
     fontSize: 18,
+  },
+  gameOverContainer: {
+    alignItems: 'center',
+    width: '100%',
   },
   gameOverText: {
     fontSize: 26,
@@ -325,12 +349,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+  resultsScrollView: {
+    width: '100%',
+    maxHeight: 300,
+  },
   resultItem: {
     marginBottom: 10,
     padding: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 5,
+  },
+  correctResult: {
+    borderColor: 'green',
+    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+  },
+  incorrectResult: {
+    borderColor: 'red',
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+  },
+  correctText: {
+    color: 'green',
+    fontWeight: 'bold',
+  },
+  incorrectText: {
+    color: 'red',
+    fontWeight: 'bold',
   },
   resetButton: {
     backgroundColor: '#6200ee',
