@@ -85,34 +85,48 @@ export default function ConnexionScreen({ navigation }: Props) {
       setLoading(false);
     }
   };
-
+  
   const createGuestAccount = async () => {
-    console.log("➡️ Création d'un compte invité...");
+    console.log("➡️ Connexion en tant qu'invité...");
+  
     setLoading(true);
-
     try {
+      const randomId = Math.random().toString(36).substring(2, 10);
+      const guestEmail = `guest_${randomId}@example.com`;
+      const guestPassword = `Guest@${Math.random().toString(36).slice(-4)}1A`;
+  
       const { data, error } = await supabase.auth.signUp({
-        email: `guest_${Date.now()}@example.com`,
-        password: `guest_${Date.now()}`,
+        email: guestEmail,
+        password: guestPassword,
       });
-
+  
       if (error) throw error;
-
-      const newGuestId = data.user!.id;
-      console.log("✅ Compte invité créé avec succès :", newGuestId);
-
+  
+      if (!data.user) throw new Error("Aucun utilisateur créé");
+  
+      console.log("✅ Compte invité créé :", data.user.id);
+  
       const { error: insertError } = await supabase.from("profiles").insert({
-        id: newGuestId,
-        username: `Invité_${newGuestId.slice(0, 5)}`,
+        id: data.user.id,
+        username: `Invité_${randomId}`,
         avatar_url: null,
         is_guest: true,
-        last_login: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
-
+  
       if (insertError) throw insertError;
-
-      await AsyncStorage.setItem("userSession", JSON.stringify(data.session));
-      console.log("✅ Invité ajouté à la base de données.");
+  
+      console.log("✅ Profil invité ajouté à la base de données");
+  
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: guestEmail,
+        password: guestPassword,
+      });
+  
+      if (signInError) throw signInError;
+  
+      console.log("✅ Invité connecté avec succès");
+  
       navigation.replace("Main");
     } catch (error: any) {
       console.error("❌ Erreur lors de la création du compte invité :", error.message);
@@ -120,7 +134,7 @@ export default function ConnexionScreen({ navigation }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   if (loading) {
     return (
