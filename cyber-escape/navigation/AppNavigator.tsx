@@ -14,13 +14,13 @@ import { View, ActivityIndicator } from "react-native";
 
 // Import game screens
 import DebuggerScreen from "../screens/DebuggerScreen";
-import AlgoHoleScreen from "../screens/AlgoHoleScreen";
 import DecipherScreen from "../screens/DecipherScreen";
 import GoFishScreen from "../screens/GoFishScreen";
 import ProtoLinkScreen from "../screens/ProtoLinkScreen";
 import OSIScreen from "../screens/OSIScreen";
 import BinaryConversionScreen from "../screens/BinaryConversionScreen";
 import LinuxQuizScreen from "../screens/LinuxQuizScreen";
+import AlgoHoleScreen from "../screens/AlgoHoleScreen";
 
 export type RootStackParamList = {
   Connexion: undefined;
