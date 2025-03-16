@@ -11,7 +11,7 @@ type Props = {
 
 type Difficulty = 'Very Easy' | 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
 
-export default function AlgoHoleScreen({ route }: Props) {
+export default function GoFishScreen({ route }: Props) {
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [level, setLevel] = useState(1);
   const [question, setQuestion] = useState('');

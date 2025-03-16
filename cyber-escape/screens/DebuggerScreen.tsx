@@ -1,160 +1,377 @@
 import React, { useState, useEffect } from 'react';
-import { RouteProp } from "@react-navigation/native";
-import { SafeAreaView, View, Text, TouchableOpacity, TextInput, StyleSheet } from "react-native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
+import {
+    SafeAreaView,
+    View,
+    Text,
+    TouchableOpacity,
+    TextInput,
+    StyleSheet,
+    Alert,
+    ScrollView,
+} from "react-native";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import {getCodeSnippet} from "../lib/CodeSnippets"
 
 type DebuggerScreenRouteProp = RouteProp<RootStackParamList, 'Debugger'>;
 
 type Props = {
-  route: DebuggerScreenRouteProp;
+    route: DebuggerScreenRouteProp;
 };
 
-type Difficulty = 'Very Easy' | 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
+interface LevelResult {
+    question: string;
+    userAnswerLine: string;
+    userAnswerChar: string;
+    correctAnswerLine: number;
+    correctAnswerChar: string;
+    isCorrect: boolean;
+}
 
 export default function DebuggerScreen({ route }: Props) {
-  const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
-  const [level, setLevel] = useState(1);
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [userInput, setUserInput] = useState('');
-  const [score, setScore] = useState(0);
+    const navigation = useNavigation();
+    const [difficultyLevel, setDifficultyLevel] = useState(0); // Very Easy
+    const [level, setLevel] = useState(1); // 1-5
+    const [score, setScore] = useState(0);
+    const [question, setQuestion] = useState('');
+    const [correctAnswerLine, setCorrectAnswerLine] = useState<number>(0);
+    const [correctAnswerChar, setCorrectAnswerChar] = useState<string>('');
+    const [userAnswerLine, setUserAnswerLine] = useState('');
+    const [userAnswerChar, setUserAnswerChar] = useState('');
+    const [usedQuestions, setUsedQuestions] = useState<string[]>([]);
+    const [levelResults, setLevelResults] = useState<LevelResult[]>([]);
+    const [isGameOver, setIsGameOver] = useState(false);
 
-  useEffect(() => {
-    generateQuestion();
-  }, [difficulty, level]);
+    const difficulties = [
+        { name: 'Very Easy', language: 'javascript' },
+        { name: 'Easy', language: 'golang' },
+        { name: 'Medium', language: 'php' },
+        { name: 'Hard', language: 'java' },
+        { name: 'Very Hard', language: 'c++' },
+    ];
 
-  const generateQuestion = () => {
-    const isBinaryToDecimal = Math.random() < 0.5;
-    let num: number;
+    const [currentLanguage, setCurrentLanguage] = useState(difficulties[0].language);
 
-    switch (difficulty) {
-      case 'Very Easy':
-        num = Math.floor(Math.random() * 16); // 0-15
-        break;
-      case 'Easy':
-        num = Math.floor(Math.random() * 32); // 0-31
-        break;
-      case 'Medium':
-        num = Math.floor(Math.random() * 64); // 0-63
-        break;
-      case 'Hard':
-        num = Math.floor(Math.random() * 128); // 0-127
-        break;
-      case 'Very Hard':
-        num = Math.floor(Math.random() * 256); // 0-255
-        break;
-    }
+    useEffect(() => {
+        if (!isGameOver) {
+            generateQuestion();
+        }
+    }, [difficultyLevel, level, isGameOver]);
 
-    if (isBinaryToDecimal) {
-      setQuestion(num.toString(2).padStart(8, '0'));
-      setAnswer(num.toString());
-    } else {
-      setQuestion(num.toString());
-      setAnswer(num.toString(2).padStart(8, '0'));
-    }
-  };
+    useEffect(() => {
+        setCurrentLanguage(difficulties[difficultyLevel].language);
+    }, [difficultyLevel]);
 
-  const checkAnswer = () => {
-    if (userInput === answer) {
-      setScore(score + 1);
-      setLevel(level + 1);
-      setUserInput('');
-      generateQuestion();
-    } else {
-      // Handle incorrect answer
-    }
-  };
+    const generateQuestion = () => {
+        const language = difficulties[difficultyLevel].language;
+        const { code, errorLine, errorChar } = getCodeSnippet(language, usedQuestions);
 
-  const changeDifficulty = (newDifficulty: Difficulty) => {
-    setDifficulty(newDifficulty);
-    setLevel(1);
-    setScore(0);
-  };
+        setQuestion(code);
+        setCorrectAnswerLine(errorLine);
+        setCorrectAnswerChar(errorChar);
+        setUsedQuestions([...usedQuestions, code]);
+    };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.difficultyContainer}>
-        {['Very Easy', 'Easy', 'Medium', 'Hard', 'Very Hard'].map((diff) => (
-          <TouchableOpacity
-            key={diff}
-            style={[styles.difficultyButton, difficulty === diff && styles.selectedDifficulty]}
-            onPress={() => changeDifficulty(diff as Difficulty)}
-          >
-            <Text style={styles.difficultyText}>{diff}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={styles.gameContainer}>
-        <Text style={styles.levelText}>Level: {level}</Text>
-        <Text style={styles.scoreText}>Score: {score}</Text>
-        <Text style={styles.questionText}>Convert: {question}</Text>
-        <TextInput
-          style={styles.input}
-          value={userInput}
-          onChangeText={setUserInput}
-          keyboardType="numeric"
-        />
-        <TouchableOpacity style={styles.submitButton} onPress={checkAnswer}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
+    const difficultyScores = [1, 2, 3, 4, 5];
+
+    const validateAnswer = () => {
+        const isCorrect =
+            parseInt(userAnswerLine, 10) === correctAnswerLine &&
+            userAnswerChar === correctAnswerChar;
+
+        setLevelResults([...levelResults, {
+            question: question,
+            userAnswerLine: userAnswerLine,
+            userAnswerChar: userAnswerChar,
+            correctAnswerLine: correctAnswerLine,
+            correctAnswerChar: correctAnswerChar,
+            isCorrect: isCorrect,
+        }]);
+
+        if (isCorrect) {
+            setScore(score + difficultyScores[difficultyLevel]);
+            Alert.alert('Correct!', '', [{ text: 'OK' }]);
+        } else {
+            Alert.alert(
+                'Incorrect!',
+                `The correct answer was line ${correctAnswerLine} and character ${correctAnswerChar}`,
+                [{ text: 'OK' }]
+            );
+        }
+
+        if (level < 5) {
+            setLevel(level + 1);
+            setUserAnswerLine('');
+            setUserAnswerChar('');
+            generateQuestion();
+        } else {
+            if (difficultyLevel < difficulties.length - 1) {
+                setDifficultyLevel(difficultyLevel + 1);
+                setLevel(1);
+                setUsedQuestions([]);
+                setUserAnswerLine('');
+                setUserAnswerChar('');
+            } else {
+                setIsGameOver(true);
+            }
+        }
+    };
+
+    const goBackToMainMenu = () => {
+        navigation.goBack();
+    };
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.backButton} onPress={goBackToMainMenu}>
+                    <Text style={styles.backButtonText}>Go Back</Text>
+                </TouchableOpacity>
+                <Text style={styles.gameName}>Debugger</Text>
+            </View>
+
+            {/* Difficulty Indicators */}
+            <View style={styles.difficultyContainer}>
+                {difficulties.map((diff, index) => (
+                    <View
+                        key={index}
+                        style={[
+                            styles.difficultyButton,
+                            index === difficultyLevel && styles.selectedDifficulty,
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.difficultyText,
+                                index === difficultyLevel && styles.selectedDifficultyText,
+                            ]}
+                        >
+                            {diff.name}
+                        </Text>
+                    </View>
+                ))}
+            </View>
+
+            <View style={styles.gameContent}>
+                {!isGameOver ? (
+                    <>
+                        <Text style={styles.levelText}>Level: {level} / 5</Text>
+                        <Text style={styles.scoreText}>Score: {score}</Text>
+                        <Text style={styles.languageText}>Language: {currentLanguage}</Text>
+
+                        <ScrollView
+                            horizontal={true}
+                            style={styles.codeBlock}
+                        >
+                            <Text selectable style={styles.codeText}>
+                                {question}
+                            </Text>
+                        </ScrollView>
+
+                        <TextInput
+                            style={styles.input}
+                            keyboardType="number-pad"
+                            value={userAnswerLine}
+                            onChangeText={setUserAnswerLine}
+                            placeholder="Enter line number with the error"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            value={userAnswerChar}
+                            onChangeText={setUserAnswerChar}
+                            placeholder="Enter missing/incorrect character"
+                        />
+                        <TouchableOpacity style={styles.submitButton} onPress={validateAnswer}>
+                            <Text style={styles.submitButtonText}>Submit</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <View style={styles.gameOverContainer}>
+                        <Text style={styles.gameOverText}>Game Over!</Text>
+                        <Text style={styles.finalScoreText}>Final Score: {score}</Text>
+                        <Text style={styles.resultsTitle}>Results:</Text>
+                        <ScrollView style={styles.resultsScrollView}>
+                            {levelResults.map((result, index) => (
+                                <View key={index} style={[
+                                    styles.resultItem,
+                                    result.isCorrect ? styles.correctResult : styles.incorrectResult
+                                ]}>
+                                    <Text>
+                                        Question:
+                                    </Text>
+                                    <Text>{result.question}</Text>
+                                    <Text>Your Answer Line: {result.userAnswerLine}</Text>
+                                    <Text>Your Answer Char: {result.userAnswerChar}</Text>
+                                    <Text>
+                                        Correct Answer Line: {result.correctAnswerLine}
+                                    </Text>
+                                    <Text>
+                                        Correct Answer Char: {result.correctAnswerChar}
+                                    </Text>
+                                    <Text style={result.isCorrect ? styles.correctText : styles.incorrectText}>
+                                        {result.isCorrect ? 'Correct!' : 'Incorrect!'}
+                                    </Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
+            </View>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  difficultyContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  difficultyButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#ddd',
-  },
-  selectedDifficulty: {
-    backgroundColor: '#007AFF',
-  },
-  difficultyText: {
-    fontSize: 12,
-  },
-  gameContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  levelText: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  scoreText: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  questionText: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  input: {
-    width: '80%',
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 18,
-  },
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    backButton: {
+        backgroundColor: '#6200ee',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+    },
+    backButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    gameName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginLeft: 20,
+    },
+    gameContent: {
+        flex: 1,
+        alignItems: 'center',
+        paddingTop: 20,
+    },
+    difficultyContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+        width: '100%',
+    },
+    difficultyButton: {
+        padding: 10,
+        borderRadius: 5,
+        backgroundColor: '#ddd',
+    },
+    selectedDifficulty: {
+        backgroundColor: '#6200ee',
+    },
+    difficultyText: {
+        fontSize: 12,
+        color: '#333',
+    },
+    selectedDifficultyText: {
+        color: '#fff',
+    },
+        languageText: {
+        fontSize: 16,
+        marginBottom: 10,
+        fontWeight: 'bold',
+    },
+    levelText: {
+        fontSize: 18,
+        marginBottom: 5,
+    },
+    scoreText: {
+        fontSize: 18,
+        marginBottom: 15,
+    },
+    codeBlock: {
+        width: '80%',
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        marginBottom: 15,
+        backgroundColor: '#f0f0f0',
+    },
+    codeText: {
+        fontSize: 14,
+        fontFamily: 'Courier New',
+    },
+    input: {
+        width: '80%',
+        padding: 8,
+        fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    submitButton: {
+        backgroundColor: '#6200ee',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+    },
+    submitButtonText: {
+        color: 'white',
+        fontSize: 18,
+    },
+    gameOverContainer: {
+        flex: 1,
+        alignItems: 'center',
+        width: '100%',
+    },
+    gameOverText: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        marginBottom: 15,
+    },
+    finalScoreText: {
+        fontSize: 22,
+        marginBottom: 20,
+    },
+    resultsTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    resultsScrollView: {
+        flex: 1,
+        width: '100%',
+    },
+    resultItem: {
+        marginBottom: 10,
+        padding: 8,
+        borderWidth: 1,
+        borderRadius: 5,
+    },
+    correctResult: {
+        borderColor: 'green',
+        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+    },
+    incorrectResult: {
+        borderColor: 'red',
+        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    },
+    correctText: {
+        color: 'green',
+        fontWeight: 'bold',
+    },
+    incorrectText: {
+        color: 'red',
+        fontWeight: 'bold',
+    },
+    resetButton: {
+        backgroundColor: '#6200ee',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        marginTop: 15,
+    },
+    resetButtonText: {
+        color: 'white',
+        fontSize: 18,
+    },
 });
