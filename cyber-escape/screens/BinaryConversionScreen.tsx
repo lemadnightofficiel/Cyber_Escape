@@ -36,122 +36,107 @@ export default function AlgoHoleScreen({ route }: Props) {
   const [isGameOver, setIsGameOver] = useState(false);
 
 
- interface LevelResult {
- question: string;
- userAnswer: string;
- correctAnswer: string;
- isCorrect: boolean;
- }
+  interface LevelResult {
+    question: string;
+    userAnswer: string;
+    correctAnswer: string;
+    isCorrect: boolean;
+  }
 
 
- const difficulties = [
- { name: 'Very Easy', min: 0, max: 15 },
- { name: 'Easy', min: 16, max: 31 },
- { name: 'Medium', min: 32, max: 63 },
- { name: 'Hard', min: 64, max: 127 },
- { name: 'Very Hard', min: 128, max: 255 },
- ];
+  const difficulties = [
+  { name: 'Very Easy', min: 0, max: 15 },
+  { name: 'Easy', min: 16, max: 31 },
+  { name: 'Medium', min: 32, max: 63 },
+  { name: 'Hard', min: 64, max: 127 },
+  { name: 'Very Hard', min: 128, max: 255 },
+  ];
 
 
- useEffect(() => {
- if (!isGameOver) {
- generateQuestion();
- }
- }, [difficultyLevel, level, isGameOver]);
+  useEffect(() => {
+    if (!isGameOver) {
+      generateQuestion();
+    }
+  }, [difficultyLevel, level, isGameOver]);
 
 
- const generateQuestion = () => {
- const { min, max } = difficulties[difficultyLevel];
- let newNumber: number;
+  const generateQuestion = () => {
+    const { min, max } = difficulties[difficultyLevel];
+    let newNumber: number;
 
 
- // Generate a new number that hasn't been used yet
- do {
- newNumber = Math.floor(Math.random() * (max - min + 1)) + min;
- } while (usedNumbers.includes(newNumber));
+    // Generate a new number that hasn't been used yet
+    do {
+      newNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    } while (usedNumbers.includes(newNumber));
 
 
- setUsedNumbers([...usedNumbers, newNumber]);
+    setUsedNumbers([...usedNumbers, newNumber]);
 
 
- // Randomly choose to convert to binary or decimal
- if (Math.random() < 0.5) {
- // Convert decimal to binary
- setQuestion(newNumber.toString());
- setAnswerType('binary');
- } else {
- // Convert binary to decimal
- setQuestion(newNumber.toString(2));
- setAnswerType('decimal');
- }
+    // Randomly choose to convert to binary or decimal
+    if (Math.random() < 0.5) {
+      // Convert decimal to binary
+      setQuestion(newNumber.toString());
+      setAnswerType('binary');
+    } else {
+      // Convert binary to decimal
+      setQuestion(newNumber.toString(2));
+      setAnswerType('decimal');
+    }
+  };
+
+  const difficultyScores = [1, 2, 3, 4, 5]; // Corresponding to Very Easy, Easy, Medium, Hard, Very Hard
+
+  const validateAnswer = () => {
+    let correctAnswer: string;
+    let isCorrect: boolean;
+
+
+    if (answerType === 'binary') {
+      correctAnswer = parseInt(question).toString(2);
+      const normalizedUserAnswer = String(userAnswer).replace(/^0+/, '');
+      isCorrect = normalizedUserAnswer === correctAnswer;
+    } else {
+      correctAnswer = parseInt(question, 2).toString();
+      isCorrect = String(userAnswer) === correctAnswer;
+    }
+
+
+    setLevelResults([...levelResults,{
+      question: question,
+      userAnswer: userAnswer,
+      correctAnswer: correctAnswer,
+      isCorrect: isCorrect,
+    },]);
+
+
+    if (isCorrect) {
+      setScore(score + difficultyScores[difficultyLevel]);
+      Alert.alert('Correct!', '', [{ text: 'OK' }]);
+    } else {
+      Alert.alert('Incorrect!', `The correct answer is ${correctAnswer}`, [
+      { text: 'OK' },
+      ]);
+    }
+
+
+    if (level < 5) {
+      setLevel(level + 1);
+      setUserAnswer('');
+      generateQuestion();
+    } else {
+      // Move to the next difficulty or end the game
+      if (difficultyLevel < difficulties.length - 1) {
+        setDifficultyLevel(difficultyLevel + 1);
+        setLevel(1);
+        setUsedNumbers([]);
+        setUserAnswer('');
+      } else {
+        setIsGameOver(true);
+      }
+    }
  };
-
-
- const validateAnswer = () => {
- let correctAnswer: string;
- let isCorrect: boolean;
-
-
- if (answerType === 'binary') {
- correctAnswer = parseInt(question).toString(2);
- const normalizedUserAnswer = String(userAnswer).replace(/^0+/, '');
- isCorrect = normalizedUserAnswer === correctAnswer;
- } else {
- correctAnswer = parseInt(question, 2).toString();
- isCorrect = String(userAnswer) === correctAnswer;
- }
-
-
- setLevelResults([
- ...levelResults,
- {
- question: question,
- userAnswer: userAnswer,
- correctAnswer: correctAnswer,
- isCorrect: isCorrect,
- },
- ]);
-
-
- if (isCorrect) {
- setScore(score + 1);
- Alert.alert('Correct!', '', [{ text: 'OK' }]);
- } else {
- Alert.alert('Incorrect!', `The correct answer is ${correctAnswer}`, [
- { text: 'OK' },
- ]);
- }
-
-
- if (level < 5) {
- setLevel(level + 1);
- setUserAnswer('');
- generateQuestion();
- } else {
- // Move to the next difficulty or end the game
- if (difficultyLevel < difficulties.length - 1) {
- setDifficultyLevel(difficultyLevel + 1);
- setLevel(1);
- setUsedNumbers([]);
- setUserAnswer('');
- } else {
- setIsGameOver(true);
- }
- }
- };
-
-
- const resetGame = () => {
- setDifficultyLevel(1);
- setLevel(1);
- setScore(0);
- setUsedNumbers([]);
- setLevelResults([]);
- setIsGameOver(false);
- setUserAnswer('');
- generateQuestion();
- };
-
 
  const goBackToMainMenu = () => {
  navigation.goBack(); // Navigate back to the previous screen
@@ -332,6 +317,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   gameOverContainer: {
+    flex: 1,
     alignItems: 'center',
     width: '100%',
   },
@@ -350,8 +336,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   resultsScrollView: {
+    flex: 1,
     width: '100%',
-    maxHeight: 300,
   },
   resultItem: {
     marginBottom: 10,
