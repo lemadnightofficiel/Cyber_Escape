@@ -29,7 +29,7 @@ const gameCategories: GameCategory[] = [
   {
     name: "Net",
     games: [
-      { name: "ProtoLink", route: "ProtoLink" },
+      { name: "ProtoQuiz", route: "ProtoQuiz" },
       { name: "OSI", route: "OSI" },
     ],
   },

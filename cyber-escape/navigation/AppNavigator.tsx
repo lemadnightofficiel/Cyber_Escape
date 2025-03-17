@@ -16,7 +16,7 @@ import { View, ActivityIndicator } from "react-native";
 import DebuggerScreen from "../screens/DebuggerScreen";
 import DecipherScreen from "../screens/DecipherScreen";
 import GoFishScreen from "../screens/GoFishScreen";
-import ProtoLinkScreen from "../screens/ProtoLinkScreen";
+import ProtoQuizScreen from "../screens/ProtoQuizScreen";
 import OSIScreen from "../screens/OSIScreen";
 import BinaryConversionScreen from "../screens/BinaryConversionScreen";
 import LinuxQuizScreen from "../screens/LinuxQuizScreen";
@@ -32,7 +32,7 @@ export type RootStackParamList = {
   AlgoHole: undefined;
   Decipher: undefined;
   GoFish: undefined;
-  ProtoLink: undefined;
+  ProtoQuiz: undefined;
   OSI: undefined;
   BinaryConversion: undefined;
   LinuxQuiz: undefined;
@@ -125,7 +125,7 @@ export default function AppNavigator() {
           <Stack.Screen name="AlgoHole" component={AlgoHoleScreen} />
           <Stack.Screen name="Decipher" component={DecipherScreen} />
           <Stack.Screen name="GoFish" component={GoFishScreen} />
-          <Stack.Screen name="ProtoLink" component={ProtoLinkScreen} />
+          <Stack.Screen name="ProtoQuiz" component={ProtoQuizScreen} />
           <Stack.Screen name="OSI" component={OSIScreen} />
           <Stack.Screen name="BinaryConversion" component={BinaryConversionScreen} />
           <Stack.Screen name="LinuxQuiz" component={LinuxQuizScreen} />
