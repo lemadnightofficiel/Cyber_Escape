@@ -16,28 +16,24 @@ const gameCategories: GameCategory[] = [
     name: "Dev",
     games: [
       { name: "Debugger", route: "Debugger" },
-      { name: "AlgoHole", route: "AlgoHole" },
     ],
   },
   {
     name: "Cyber",
     games: [
       { name: "Decipher", route: "Decipher" },
-      { name: "Go Fish", route: "GoFish" },
     ],
   },
   {
     name: "Net",
     games: [
       { name: "ProtoQuiz", route: "ProtoQuiz" },
-      { name: "OSI", route: "OSI" },
     ],
   },
   {
     name: "IT",
     games: [
       { name: "Binary Conversion", route: "BinaryConversion" },
-      { name: "Linux Quiz", route: "LinuxQuiz" },
     ],
   },
 ];
@@ -51,6 +47,13 @@ export default function GamesScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Games Menu</Text>
+        <Text style={styles.headerSubtitle}>Explore categories and play exciting games!</Text>
+      </View>
+
+      {/* Game Categories */}
       {gameCategories.map((category, index) => (
         <View key={index} style={styles.categoryContainer}>
           <Text style={styles.categoryTitle}>{category.name}</Text>
@@ -72,31 +75,53 @@ export default function GamesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f9f9f9',
+    paddingHorizontal: 15,
+    paddingTop: 10,
+  },
+  header: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 5,
+    textAlign: 'center',
   },
   categoryContainer: {
     marginBottom: 20,
-    padding: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
     backgroundColor: '#ffffff',
     borderRadius: 10,
-    marginHorizontal: 10,
-    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   categoryTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
+    marginBottom: 15,
+    color: '#6200ee',
   },
   gameButton: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 5,
+    backgroundColor: '#6200ee',
+    paddingVertical: 12,
+    borderRadius: 8,
     marginBottom: 10,
   },
   gameButtonText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '500',
     textAlign: 'center',
   },
 });

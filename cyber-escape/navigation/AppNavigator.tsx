@@ -15,12 +15,8 @@ import { View, ActivityIndicator } from "react-native";
 // Import game screens
 import DebuggerScreen from "../screens/DebuggerScreen";
 import DecipherScreen from "../screens/DecipherScreen";
-import GoFishScreen from "../screens/GoFishScreen";
 import ProtoQuizScreen from "../screens/ProtoQuizScreen";
-import OSIScreen from "../screens/OSIScreen";
 import BinaryConversionScreen from "../screens/BinaryConversionScreen";
-import LinuxQuizScreen from "../screens/LinuxQuizScreen";
-import AlgoHoleScreen from "../screens/AlgoHoleScreen";
 
 export type RootStackParamList = {
   Connexion: undefined;
@@ -122,13 +118,9 @@ export default function AppNavigator() {
         <>
           <Stack.Screen name="Main" component={BottomTabNavigator} />
           <Stack.Screen name="Debugger" component={DebuggerScreen} />
-          <Stack.Screen name="AlgoHole" component={AlgoHoleScreen} />
           <Stack.Screen name="Decipher" component={DecipherScreen} />
-          <Stack.Screen name="GoFish" component={GoFishScreen} />
           <Stack.Screen name="ProtoQuiz" component={ProtoQuizScreen} />
-          <Stack.Screen name="OSI" component={OSIScreen} />
           <Stack.Screen name="BinaryConversion" component={BinaryConversionScreen} />
-          <Stack.Screen name="LinuxQuiz" component={LinuxQuizScreen} />
         </>
       ) : (
         <>
