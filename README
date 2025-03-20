@@ -1,0 +1,62 @@
+# Cyber Escape
+
+Cyber Escape est une application mobile de mini-jeux sur diverses catégories de l'informatique. Elle propose une gestion des comptes via **Supabase**, un mode de connexion invité, un **leaderboard dynamique** et un **système de badges**. L'application est développée avec **React Native** via **Expo** et utilise **TypeScript (TSX)** ainsi que du **CSS**.
+
+## 📌 Fonctionnalités
+
+- **Gestion des comptes** avec Supabase (authentification et CRUD)
+- **Mode invité** pour jouer sans compte
+- **Mini-jeux** sur différentes catégories de l'informatique (Cyber, Dev, Network et IT)
+- **Leaderboard dynamique** pour voir les scores des joueurs
+- **Système de badges** à débloquer selon les performances
+- **Interface fluide et ergonomique**
+
+## 🖥️ Pages principales
+
+- **Accueil** : Présentation de l'application et accès aux différentes fonctionnalités
+- **Défis** : Liste des mini-jeux et catégories disponibles
+- **Leaderboard** : Classement dynamique des joueurs en fonction des scores
+- **Profil** : Gestion des comptes, progression et badges débloqués
+
+## 🚀 Installation et lancement
+
+### Prérequis
+- Node.js
+- React Native avec expo
+
+### Installation
+
+1. **Cloner le projet**
+   ```bash
+   git clone https://github.com/tonrepo/cyber-escape.git
+   cd cyber-escape
+   ```
+
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
+
+3. **Configurer les variables d'environnement** (créer un fichier `.env` à la racine)
+   ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Lancer l'application**
+   ```bash
+   npm start
+   ```
+
+## 📚 Technologies utilisées
+
+- **React Native** avec Expo
+- **TypeScript (TSX)**
+- **CSS**
+- **Supabase** (authentification et base de données)
+
+---
+
+🚀 Amusez-vous bien avec **Cyber Escape** ! 🎮
+
+### Fait par Jeremy Gaudin et Matthieu Caron
