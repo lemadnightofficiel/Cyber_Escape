@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import {getCodeSnippet} from "../lib/CodeSnippets"
+import { supabase } from '../lib/supabase';
 
 type DebuggerScreenRouteProp = RouteProp<RootStackParamList, 'Debugger'>;
 
@@ -62,6 +63,29 @@ export default function DebuggerScreen({ route }: Props) {
         setCurrentLanguage(difficulties[difficultyLevel].language);
     }, [difficultyLevel]);
 
+    const restoreSession = async () => {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) throw error;
+
+        if (session) {
+        console.log("✅ Session restored successfully");
+        return session.user.id; 
+        }
+
+        console.log("🚫 No session found. Login required.");
+        Alert.alert("Error", "No active session found. Please log in again.");
+        return null;
+    } catch (error: any) {
+        console.error("⚠️ Error restoring session:", error.message);
+        Alert.alert("Error", "Failed to restore session.");
+        return null;
+    } finally {
+
+    }
+    };
+
     const generateQuestion = () => {
         const language = difficulties[difficultyLevel].language;
         const { code, errorLine, errorChar } = getCodeSnippet(language, usedQuestions);
@@ -90,14 +114,17 @@ export default function DebuggerScreen({ route }: Props) {
 
         if (isCorrect) {
             setScore(score + difficultyScores[difficultyLevel]);
-            Alert.alert('Correct!', '', [{ text: 'OK' }]);
+            Alert.alert('Correct!', '', [{ text: 'OK', onPress: handleNextLevel }]);
         } else {
             Alert.alert(
                 'Incorrect!',
                 `The correct answer was line ${correctAnswerLine} and character ${correctAnswerChar}`,
-                [{ text: 'OK' }]
+                [{ text: 'OK', onPress: handleNextLevel }]
             );
         }
+    };
+
+    const handleNextLevel = () => {
 
         if (level < 5) {
             setLevel(level + 1);
@@ -117,9 +144,40 @@ export default function DebuggerScreen({ route }: Props) {
         }
     };
 
+    const handleGameCompletion = async () => {
+        try {
+            // Restore session to get user ID
+            const userId = await restoreSession();
+
+            if (!userId) throw new Error("No active session found.");
+
+            // Save score in leaderboard table
+            const { error: insertError } = await supabase.from("leaderboard").insert({
+            user_id: userId,
+            game_id: 1,
+            score: score,
+            updated_at: new Date().toISOString(),
+            id: userId,
+            last_updated: new Date().toISOString(),
+            });
+
+            if (insertError) throw insertError;
+
+            console.log("✅ Score saved successfully!");
+            Alert.alert("Success", "Your score has been saved!");
+        } catch (error: any) {
+            console.error("❌ Error saving score:", error.message);
+            Alert.alert("Error", "Failed to save your score.");
+        }
+    };
+
     const goBackToMainMenu = () => {
         navigation.goBack();
     };
+
+    if(isGameOver){
+        handleGameCompletion();
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -214,6 +272,12 @@ export default function DebuggerScreen({ route }: Props) {
                                 </View>
                             ))}
                         </ScrollView>
+                        <TouchableOpacity
+                            style={styles.resetButton}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Text style={styles.resetButtonText}>Return to Main Menu</Text>
+                        </TouchableOpacity>
                     </View>
                 )}
             </View>

@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import { supabase } from '../lib/supabase';
 
 type ProtoQuizScreenRouteProp = RouteProp<RootStackParamList, 'ProtoQuiz'>;
 
@@ -577,6 +578,29 @@ export default function ProtoQuizScreen({ route }: Props) {
     }
   }, [difficultyLevel, level, isGameOver]);
 
+  const restoreSession = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) throw error;
+
+      if (session) {
+        console.log("✅ Session restored successfully");
+        return session.user.id; 
+      }
+
+      console.log("🚫 No session found. Login required.");
+      Alert.alert("Error", "No active session found. Please log in again.");
+      return null;
+    } catch (error: any) {
+      console.error("⚠️ Error restoring session:", error.message);
+      Alert.alert("Error", "Failed to restore session.");
+      return null;
+    } finally {
+
+    }
+  };
+
   const generateQuestion = () => {
     const protocolType = difficulties[difficultyLevel].protocol;
     let availableQuestions = questions[protocolType].filter(q => !usedQuestions.includes(q.question));
@@ -619,13 +643,15 @@ export default function ProtoQuizScreen({ route }: Props) {
 
     if (isCorrect) {
       setScore(score + difficultyLevel + 1);
-      Alert.alert('Correct!', '', [{ text: 'OK' }]);
+      Alert.alert('Correct!', '', [{ text: 'OK', onPress: handleNextLevel }]);
     } else {
       Alert.alert('Incorrect!', `The correct answer is ${currentQuestion.correctAnswer}`, [
-        { text: 'OK' },
+        { text: 'OK', onPress: handleNextLevel },
       ]);
     }
+  };
 
+  const handleNextLevel = () => {
     if (level < 5) {
       setLevel(level + 1);
       generateQuestion();
@@ -640,9 +666,40 @@ export default function ProtoQuizScreen({ route }: Props) {
     }
   };
 
+  const handleGameCompletion = async () => {
+    try {
+      // Restore session to get user ID
+      const userId = await restoreSession();
+
+      if (!userId) throw new Error("No active session found.");
+
+      // Save score in leaderboard table
+      const { error: insertError } = await supabase.from("leaderboard").insert({
+        user_id: userId,
+        game_id: 3,
+        score: score,
+        updated_at: new Date().toISOString(),
+        id: userId,
+        last_updated: new Date().toISOString(),
+      });
+
+      if (insertError) throw insertError;
+
+      console.log("✅ Score saved successfully!");
+      Alert.alert("Success", "Your score has been saved!");
+    } catch (error: any) {
+      console.error("❌ Error saving score:", error.message);
+      Alert.alert("Error", "Failed to save your score.");
+    }
+  };
+
   const goBackToMainMenu = () => {
     navigation.goBack();
   };
+
+  if(isGameOver){
+    handleGameCompletion();
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -711,6 +768,12 @@ export default function ProtoQuizScreen({ route }: Props) {
                 </View>
               ))}
             </ScrollView>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.resetButtonText}>Return to Main Menu</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -840,5 +903,16 @@ const styles = StyleSheet.create({
   incorrectText: {
     color: 'red',
     fontWeight: 'bold',
+  },
+  resetButton: {
+    backgroundColor: '#6200ee',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 15,
+  },
+  resetButtonText: {
+    color: 'white',
+    fontSize: 18,
   },
 });

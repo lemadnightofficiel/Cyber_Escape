@@ -26,7 +26,7 @@ interface UserData {
 }
 
 const theme = {
-  primary: '#4A90E2',
+  primary: '#6200ee',
   background: '#F0F4F8',
   text: '#333333',
   error: '#FF4D4F',
@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: theme.background,
+    paddingTop: 25,
     padding: 20,
   },
   scrollView: { 
