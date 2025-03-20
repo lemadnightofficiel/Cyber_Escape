@@ -29,14 +29,14 @@ export default function LeaderboardScreen() {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const isMounted = useRef(true); // To prevent setting state on unmounted component
+    const isMounted = useRef(true);
 
     useEffect(() => {
         fetchGames();
         fetchCurrentUserId();
 
         return () => {
-            isMounted.current = false; // Set isMounted to false when component unmounts
+            isMounted.current = false;
         };
     }, []);
 

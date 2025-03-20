@@ -625,11 +625,11 @@ const styles = StyleSheet.create({
   },
   helpColumn: {
     flex: 1,
-    paddingHorizontal: 5, // Reduced padding for more columns
+    paddingHorizontal: 5,
   },
   helpText: {
-    fontSize: 14, // Reduced font size to fit more content
-    marginBottom: 3, // Reduced margin
+    fontSize: 14,
+    marginBottom: 3,
     lineHeight: 20,
     fontFamily: 'monospace',
   },

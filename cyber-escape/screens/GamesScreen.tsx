@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/AppNavigator'; // Adjust the import path as needed
+import { RootStackParamList } from '../navigation/AppNavigator';
 
 type GamesScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 

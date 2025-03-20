@@ -24,7 +24,7 @@ type Props = {
 
 export default function AlgoHoleScreen({ route }: Props) {
   const navigation = useNavigation();
-  const [difficultyLevel, setDifficultyLevel] = useState(0); // Start at "Easy" which is index 1
+  const [difficultyLevel, setDifficultyLevel] = useState(0);
   const [level, setLevel] = useState(1); // 1-5
   const [score, setScore] = useState(0);
   const [question, setQuestion] = useState('');
@@ -109,7 +109,7 @@ export default function AlgoHoleScreen({ route }: Props) {
     }
   };
 
-  const difficultyScores = [1, 2, 3, 4, 5]; // Corresponding to Very Easy, Easy, Medium, Hard, Very Hard
+  const difficultyScores = [1, 2, 3, 4, 5]; 
 
   const validateAnswer = () => {
     let correctAnswer: string;
